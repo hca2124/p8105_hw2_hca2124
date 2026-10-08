@@ -136,5 +136,59 @@ Professor Trash Wheel collected `r filter(trashwheels_df,trash_wheel == "Profess
 
 Gwynnda collected a total number of `r filter(trashwheels_df,trash_wheel =="Gwynnda Trash Wheel", month == "June", year == 2022) |> select(cigarette_butts) |> sum() |> format (scientific=FALSE)`cigarette butts in June 2022.
 
+#Question 3
+```{r}
+mci_df = read_csv("./MCI_baseline.csv",
+                  skip = 1,
+                  na = c("NA", ".", "")) |>
+  janitor::clean_names() |>
+  mutate(
+    sex = case_match(sex, 1 ~"male", 0 ~ "female"),
+    apoe4 = case_match(apoe4, 1 ~ "carrier", 0 ~ "non-carrier"))
+
+```
+
+```{r}
+mci_baseline =
+  mci_df |>
+  filter(is.na(age_at_onset) | age_at_onset > current_age)
+```
+
+The first line of the imported file was skipped as it did not contain data, rather comments.Sex and apoe4 were recoded and converted from numerical to character values. We then filterd to keep those who did not develop MCI/ MCI came after baseline age.
+
+There were `r nrow(mci_df)` participants recruited. Of those recruited, `r mci_baseline |> filter(!is.na(age_at_onset)) |> nrow()` developed MCI. The average baseline age is `r round(mean(pull(mci_baseline, current_age)),1)` years. `r round(100 * mean(pull(filter(mci_baseline, sex == "female"), apoe4) == "carrier"), 1)` % of women in the study are apoe4 carriers.
+
+```{r}
+mci_amyloid_df =
+  read_csv("mci_amyloid.csv",
+           skip = 1,
+           na = c("NA", ".", "")) |>
+  janitor::clean_names() |>
+  rename(id = study_id)
+```
+
+The first line of the imported file was skipped as it did not contain data, rather comments. 'Study_id' was renamed to 'id' in order to match the baseline data.This dataset has `r nrow(mci_amyloid_df)` participants.
+
+```{r}
+anti_join(mci_baseline, mci_amyloid_df, by = "id") |>
+  nrow()
+
+anti_join(mci_amyloid_df, mci_baseline, by = "id") |>
+  nrow()
+
+```
+
+There are `r anti_join(mci_baseline, mci_amyloid_df, by = "id") |> nrow()` participants in the baseline that are not in the amyloid dataset. There are `r anti_join(mci_amyloid_df, mci_baseline, by = "id") |> nrow()` participants in the amyloid that are not in the baseline dataset.
+
+```{r}
+mci_combined_df =
+  inner_join(mci_baseline, mci_amyloid_df, by = "id")
+
+write_csv(mci_combined_df, "mci_combined_df.csv")
+```
+
+There are `r nrow(mci_combined_df)` subjects in the combined dataset.There is a combined total of `r ncol(mci_combined_df)` variables.
+
+
 
 

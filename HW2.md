@@ -182,3 +182,88 @@ Good Wheel of the W, and Professor Trash Wheel.
 Professor Trash Wheel collected 294.96 tons of trash.
 
 Gwynnda collected a total number of 18120cigarette butts in June 2022.
+
+\#Question 3
+
+``` r
+mci_df = read_csv("./MCI_baseline.csv",
+                  skip = 1,
+                  na = c("NA", ".", "")) |>
+  janitor::clean_names() |>
+  mutate(
+    sex = case_match(sex, 1 ~"male", 0 ~ "female"),
+    apoe4 = case_match(apoe4, 1 ~ "carrier", 0 ~ "non-carrier"))
+```
+
+    ## Rows: 483 Columns: 6
+    ## ── Column specification ────────────────────────────────────────────────────────
+    ## Delimiter: ","
+    ## dbl (6): ID, Current Age, Sex, Education, apoe4, Age at onset
+    ## 
+    ## ℹ Use `spec()` to retrieve the full column specification for this data.
+    ## ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.
+
+``` r
+mci_baseline =
+  mci_df |>
+  filter(is.na(age_at_onset) | age_at_onset > current_age)
+```
+
+The first line of the imported file was skipped as it did not contain
+data, rather comments.Sex and apoe4 were recoded and converted from
+numerical to character values. We then filterd to keep those who did not
+develop MCI/ MCI came after baseline age.
+
+There were 483 participants recruited. Of those recruited, 93 developed
+MCI. The average baseline age is 65 years. 30 % of women in the study
+are apoe4 carriers.
+
+``` r
+mci_amyloid_df =
+  read_csv("mci_amyloid.csv",
+           skip = 1,
+           na = c("NA", ".", "")) |>
+  janitor::clean_names() |>
+  rename(id = study_id)
+```
+
+    ## Rows: 487 Columns: 6
+    ## ── Column specification ────────────────────────────────────────────────────────
+    ## Delimiter: ","
+    ## chr (5): Baseline, Time 2, Time 4, Time 6, Time 8
+    ## dbl (1): Study ID
+    ## 
+    ## ℹ Use `spec()` to retrieve the full column specification for this data.
+    ## ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.
+
+The first line of the imported file was skipped as it did not contain
+data, rather comments. ‘Study_id’ was renamed to ‘id’ in order to match
+the baseline data.This dataset has 487 participants.
+
+``` r
+anti_join(mci_baseline, mci_amyloid_df, by = "id") |>
+  nrow()
+```
+
+    ## [1] 8
+
+``` r
+anti_join(mci_amyloid_df, mci_baseline, by = "id") |>
+  nrow()
+```
+
+    ## [1] 16
+
+There are 8 participants in the baseline that are not in the amyloid
+dataset. There are 16 participants in the amyloid that are not in the
+baseline dataset.
+
+``` r
+mci_combined_df =
+  inner_join(mci_baseline, mci_amyloid_df, by = "id")
+
+write_csv(mci_combined_df, "mci_combined_df.csv")
+```
+
+There are 471 subjects in the combined dataset.There is a combined total
+of 11 variables.
