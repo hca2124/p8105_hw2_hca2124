@@ -1,0 +1,35 @@
+---
+title: "p8105_hw2_hca2124"
+author: "Helene Apollon"
+date: "2026-10-08"
+output: github_document
+---
+
+#Question 1
+
+```{r}
+library(tidyverse)
+
+NYC_transit_df =
+  read_csv("./NYC_Transit_Subway_Entrance_And_Exit_Data.csv",
+           na = c ("NA", ".", ""))|>
+janitor::clean_names() |>
+  select(line, station_name, station_latitude, station_longitude, route1:route11, entry, vending, entrance_type, ada) |>
+mutate(
+  entry = 
+         case_match(
+           entry,
+           "YES" ~ TRUE,
+           "NO" ~ FALSE
+         ))
+  
+```
+This data set contains information on the entrances and exits for each station in NYC. It contains `r ncol(NYC_transit_df)` variables. From the original data, I cleaned the names, and kept only the variables of interest using the select line followed by the variable names. Then I converted the entry variable from a character (Yes vs No), to a logical variable. The final dataset has `r nrow(NYC_transit_df)` rows and `r ncol(NYC_transit_df)` columns. The data is not tidy because the Route variable is spread across 11 variable columns from route1:route11.
+
+
+
+
+
+
+
+
