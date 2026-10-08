@@ -58,3 +58,68 @@ select line followed by the variable names. Then I converted the entry
 variable from a character (Yes vs No), to a logical variable. The final
 dataset has 1868 rows and 19 columns. The data is not tidy because the
 Route variable is spread across 11 variable columns from route1:route11.
+
+``` r
+NYC_transit_df |> 
+  distinct(line, station_name) |> 
+  nrow()
+```
+
+    ## [1] 465
+
+There are 465 distinct stations.
+
+``` r
+NYC_transit_df |>
+  filter(ada) |>
+  distinct(line, station_name) |>
+  nrow()
+```
+
+    ## [1] 84
+
+There are 84 ADA compliant stations.
+
+``` r
+NYC_transit_df |>
+  filter(vending == "NO") |>
+  pull(entry) |>
+  mean()
+```
+
+    ## [1] 0.3770492
+
+0.38 of the station entrances/exits without vending allow entrance
+
+``` r
+NYC_transit_reformat_df =
+  NYC_transit_df |>
+  mutate(route8 = as.character(route8),
+         route9 = as.character(route9),
+         route10 = as.character(route10),
+         route11 = as.character(route11)) |>
+  pivot_longer(
+    route1:route11,
+    names_to = "route_number",
+    values_to = "route_name",
+    names_prefix = "route",
+    values_drop_na = TRUE
+  )
+
+# Distinct stations that serve the A
+A_train =
+  NYC_transit_reformat_df |>
+  filter(route_name == "A") |>
+  distinct(station_name, line, .keep_all = TRUE) |>
+  nrow()
+
+# A stations that are ADA compliant
+ADA_A_stations = 
+  NYC_transit_reformat_df |>
+  filter(route_name == "A", ada) |>
+  distinct(line, station_name) |>
+  nrow()
+```
+
+There are 60distinct stations that serve the A train. Of the stations
+that serve the A train, 17 are ADA compliant.
