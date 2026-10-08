@@ -121,5 +121,64 @@ ADA_A_stations =
   nrow()
 ```
 
-There are 60distinct stations that serve the A train. Of the stations
+There are 60 distinct stations that serve the A train. Of the stations
 that serve the A train, 17 are ADA compliant.
+
+\#Question 2
+
+``` r
+library(readxl)
+mrtrash_df = 
+  read_excel("./202610 Trash Wheel Collection Data.xlsx",
+             sheet = "Mr. Trash Wheel",
+             range = "A2:N742") |>
+  janitor::clean_names() |>
+  drop_na(dumpster) |>
+  mutate(sports_balls = as.integer(round(sports_balls)),
+         year = as.numeric(year),
+         trash_wheel = "Mr. Trash Wheel")
+```
+
+``` r
+professortrash_df =
+  read_excel("./202610 Trash Wheel Collection Data.xlsx",
+             sheet = "Professor Trash Wheel",
+             range = "A2:M139") |>
+  janitor::clean_names() |>
+  drop_na(dumpster) |>
+  mutate(year = as.numeric(year),
+         plastic_bottles = as.numeric(plastic_bottles),
+         trash_wheel = "Professor Trash Wheel")
+```
+
+    ## Warning: There was 1 warning in `mutate()`.
+    ## ℹ In argument: `plastic_bottles = as.numeric(plastic_bottles)`.
+    ## Caused by warning:
+    ## ! NAs introduced by coercion
+
+``` r
+gwynnda_df =
+  read_excel("./202610 Trash Wheel Collection Data.xlsx",
+             sheet = "Gwynnda the Good Wheel of the W",
+             range = "A2:L394") |>
+  janitor::clean_names() |>
+  drop_na(dumpster) |>
+  mutate(year = as.numeric(year),
+         trash_wheel = "Gwynnda Trash Wheel")
+```
+
+\#Combining datasets
+
+``` r
+trashwheels_df =
+  bind_rows(mrtrash_df, professortrash_df, gwynnda_df) |>
+  janitor::clean_names()
+```
+
+The final trashwheels dataset has a total of 1269 observations. These
+observations are a combination of data from Mr. Trash Wheel, Gwynnda the
+Good Wheel of the W, and Professor Trash Wheel.
+
+Professor Trash Wheel collected 294.96 tons of trash.
+
+Gwynnda collected a total number of 18120cigarette butts in June 2022.
